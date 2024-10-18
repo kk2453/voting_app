@@ -9,10 +9,8 @@ const fetchuser = require("../middleware/fetchuser.js");
 router.post(
   "/createuser",
   [
-    body("name", "enter the valid name").isLength({ min: 3 }),
-    body("email", "enter the valid email").isEmail(),
     body("aadharNumber", "enter the valid aadharNumber").isLength({ min: 9 }),
-    body("password", "enter the valid password").isLength({ min: 3 }),
+    body("voterid", "enter the valid voterid").isLength({ min: 3 }),
   ],
   async (req, res) => {
     const result = validationResult(req);
@@ -21,13 +19,6 @@ router.post(
       return res.json({ success, errors: result.array() });
     }
     try {
-      let user = await User.findOne({ email: req.body.email });
-      if (user) {
-        return res.json({
-          success: false,
-          error: "please enter a unique value for email",
-        });
-      }
       let aaaa = await User.findOne({ aadharNumber: req.body.aadharNumber });
       if (aaaa) {
         return res.json({
@@ -36,14 +27,12 @@ router.post(
         });
       }
 
-      const salt = await bcrypt.genSaltSync(10);
-      const secPass = await bcrypt.hash(req.body.password, salt);
+      // const salt = await bcrypt.genSaltSync(10);
+      // const secPass = await bcrypt.hash(req.body.password, salt);
 
       user = await User.create({
-        name: req.body.name,
-        email: req.body.email,
         aadharNumber: req.body.aadharNumber,
-        password: secPass,
+        voterid:req.body.voterid,
         isvoted: req.body.isvoted,
       });
       /*.then(res.send(req.body))

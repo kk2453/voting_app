@@ -2,9 +2,11 @@ const express = require("express");
 const router = express.Router();
 const Notes = require("../models/Notes.js");
 const { body, validationResult } = require("express-validator");
-const fetchuser = require("../middleware/fetchuser.js");
+const fetchuser1 = require("../middleware/fetchuser1.js");
+// const fetchuser = require("../middleware/fetchuser.js");
 
-router.get("/fetchallcandidate", async (req, res) => {
+
+router.get("/fetchallcandidate",async (req, res) => {
   try {
     const notes = await Notes.find({});
     try {
@@ -21,6 +23,7 @@ router.get("/fetchallcandidate", async (req, res) => {
 
 router.post(
   "/addcandidate",
+  fetchuser1,
   [
     body("name", "enter the valid name").isLength({ min: 3 }),
     body("party", "enter the valid party"),
@@ -42,13 +45,14 @@ router.post(
         party,
         voteCount,
       });
-      res.send(notes)
+      const savenote = await notes.save();
+      res.json(savenote);
     } catch (error) {
       return res.send({ error: error.message });
     }
   }
 );
-router.put("/updatecandidate/:id", async (req, res) => {
+router.put("/updatecandidate/:id",async (req, res) => {
   try{
     const { name,party, voteCount } = req.body;
     const newNote = {};
@@ -78,6 +82,27 @@ router.put("/updatecandidate/:id", async (req, res) => {
   } catch (error) {
     console.error(error.message);
     res.status(500).send("some error occur");
+  }
+});
+router.delete("/deletecandidate/:id",fetchuser1,async (req, res) => {
+  try{
+    let notes = await Notes.findById( req.params.id );
+
+    if (!notes) {
+      return res.status(404).send("please use the correct credential" );
+    }
+
+    /*if (notes.user.toString() !== req.user.id) {
+      return res.status(401).send("Not allowed");
+    }*/
+
+
+    notes = await Notes.findByIdAndDelete(req.params.id);
+    res.json({"success":"the note has been deleted"});
+
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("some error occured");
   }
 });
 module.exports=router
