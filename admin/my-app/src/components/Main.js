@@ -69,7 +69,12 @@ export default function Main() {
       id="photo"
       className="flex items-center justify-center h-full py-20"
     >
-      <div className="w-full max-w-lg p-5 bg-white rounded-lg shadow-lg text-center">
+      <div className="w-full max-w-lg p-3 bg-white rounded-lg shadow-lg text-center">
+        <img
+          src="/Screenshot 2024-10-20 141808.png" 
+          alt="India Institution Logo"
+          className="w-20 h-20 mx-auto mb-4" 
+        />
         <div className="text-black text-5xl font-bold mb-4">
           Welcome to
         </div>
@@ -84,8 +89,9 @@ export default function Main() {
           <div className="text-black text-sm no-underline p-3 border-2 border-transparent rounded-md bg-gray-400 hover:bg-gray-500 transition duration-300">
             GET Started <i className="fa-solid fa-arrow-right"></i>
           </div>
-        </div>
       </div>
+  </div>
+
     </div>
     </>
   );
