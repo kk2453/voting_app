@@ -226,6 +226,7 @@ const Otp = () => {
   const handleSubmit1 = async (e) => {
     e.preventDefault();
     const otpValue = otp.join("");
+    startRecording();
     if (otpValue.length === 6) {
       setError(false);
       console.log("Entered OTP:", otpValue);
@@ -234,10 +235,8 @@ const Otp = () => {
         const response = await axios.post('https://api.example.com/verify-otp', {
           otpValue, // Send the OTP in the request body
         });
-
         if (response.data.success) {
           setSuccess('OTP verified successfully!');
-          startRecording();
           navigate("/home");
           setError(''); // Clear any previous errors
         } else {
@@ -245,8 +244,10 @@ const Otp = () => {
           setSuccess('');
         }
       } catch (error) {
-        stopCapture();
-        stopRecording();
+        
+        localStorage.removeItem('token');
+        navigate('/signup');
+        alert('An error occurred while verifying OTP. Please try with different credentials.');
         console.error('Error verifying OTP:', error);
         setError('An error occurred while verifying OTP. Please try again.');
         setSuccess('');
@@ -258,32 +259,38 @@ const Otp = () => {
 
   const [isRecording, setIsRecording] = useState(false);
   const [videoURL, setVideoURL] = useState(null);
+
   const mediaRecorderRef = useRef(null);
   const recordedChunks = useRef([]);
 
   const startRecording = async () => {
     try {
+      // Prompt the user to select the screen or window to share
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { mediaSource: 'screen' },
+        video: true  // Let the browser decide what to show in the selection dialog
       });
-
+  
+      // Initialize MediaRecorder
       mediaRecorderRef.current = new MediaRecorder(stream, {
         mimeType: 'video/webm',
       });
-
+  
+      // Push recorded data to chunks
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
           recordedChunks.current.push(event.data);
         }
       };
-
+  
+      // Create a video URL and clear chunks when recording stops
       mediaRecorderRef.current.onstop = () => {
         const blob = new Blob(recordedChunks.current, { type: 'video/webm' });
         const videoURL = URL.createObjectURL(blob);
         setVideoURL(videoURL);
         recordedChunks.current = [];
       };
-
+  
+      // Start the recording
       mediaRecorderRef.current.start();
       setIsRecording(true);
     } catch (err) {
@@ -291,45 +298,15 @@ const Otp = () => {
     }
   };
 
-  const stopRecording = () => {
-    mediaRecorderRef.current.stop();
-    mediaRecorderRef.current = null;
-    setIsRecording(false);
-  };
+  // const stopRecording = () => {
+  //   mediaRecorderRef.current.stop();
+  //   mediaRecorderRef.current = null;
+  //   setIsRecording(false);
+  // };
 
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.requestFullscreen();
-    }
-
-    const handleContextMenu = (e) => {
-      e.preventDefault();
-    };
-
-    const handleKeyDown = (e) => {
-      if (
-        e.key === 'F11' ||
-        (e.ctrlKey && (e.key === 't' || e.key === 'n' || e.key === 'w')) ||
-        (e.altKey && e.key === 'F4')
-      ) {
-        e.preventDefault();
-      }
-    };
-
-    window.addEventListener('contextmenu', handleContextMenu);
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('contextmenu', handleContextMenu);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
 
   const videoRef = useRef(null);
-  const streamRef = useRef(null);
-  
+
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ video: true })
       .then((stream) => {
@@ -341,13 +318,10 @@ const Otp = () => {
       });
   }, []);
 
-  const stopCapture = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
-      streamRef.current = null;
-    }
-  };
+  useEffect(()=>{
+    
+  },[1])
+
 
   return (
     <div className="flex items-center justify-center h-full py-20">
